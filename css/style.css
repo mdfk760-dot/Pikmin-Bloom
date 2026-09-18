@@ -213,11 +213,51 @@
       display: none;
     }
 
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+	.admin-grid {
+	  display: grid;
+	  grid-template-columns: repeat(6, minmax(0, 1fr));
+	  gap: 14px;
+	}
+	
+	.field.full {
+	  grid-column: 1 / -1;
+	}
+	
+	.field.half {
+	  grid-column: span 3;
+	}
+	
+	.field.third {
+	  grid-column: span 2;
+	}
+	
+	/* 原本一般輸入欄位維持左右兩欄 */
+	.field:not(.full):not(.half):not(.third) {
+	  grid-column: span 3;
+	}
+	
+	
+	/* Random 區域 */
+	.random-panel {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 10px;
+	}
+	
+	.random-row {
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  gap: 10px;
+	}
+	
+	.random-row span {
+	  flex-shrink: 0;
+	}
+	
+	.random-panel > button {
+	  width: 100%;
+	}
 
     .field.full { grid-column: 1 / -1; }
     .field.half { grid-column: span 1; }
@@ -602,8 +642,16 @@
         margin-bottom: 28px;
       }
 
-      .admin-grid { grid-template-columns: 1fr; }
-      .field.half { grid-column: 1 / -1; }
+		.admin-grid {
+		  grid-template-columns: 1fr;
+		}
+		
+		.field.full,
+		.field.half,
+		.field.third,
+		.field:not(.full):not(.half):not(.third) {
+		  grid-column: 1 / -1;
+		}
       .topbar { align-items: stretch; }
       .search-area,
       .topbar > button { width: 100%; }
