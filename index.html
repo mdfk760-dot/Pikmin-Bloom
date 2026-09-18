@@ -47,22 +47,44 @@
 
       <div id="adminPanelBody" class="admin-panel-body">
       <div class="admin-grid">
-        <div class="field half">
-          <label for="rawInput">貼上內容</label>
-          <textarea id="rawInput" placeholder="例如：
-&quot;妖妖C左
-🌸紅色菊花25株
-⏰5/26 12:05
-📝隨意收&quot;"></textarea>
-        </div>
-
-        <div class="field half">
-          <label for="coordsInput">貼上座標</label>
-          <textarea id="coordsInput" class="coords-box" placeholder="例如：
-25.000000,121.000000
-25.000001,121.000001
-25.000002,121.000002"></textarea>
-        </div>
+		<div class="field third">
+		  <label for="rawInput">貼上內容</label>
+		  <textarea id="rawInput" placeholder="例如：
+		&quot;妖妖C左
+		🌸紅色菊花25株
+		⏰5/26 12:05
+		📝隨意收&quot;"></textarea>
+		</div>
+		
+		<div class="field third">
+		  <label for="coordsInput">貼上座標</label>
+		  <textarea id="coordsInput" class="coords-box" placeholder="例如：
+		25.000000,121.000000
+		25.000001,121.000001
+		25.000002,121.000002"></textarea>
+		</div>
+		
+		<div class="field third random-panel">
+		  <label>Random 花朵</label>
+		
+		  <div class="random-row">
+		    <span>花色</span>
+		    <button id="randomColorBtn" type="button" class="secondary">
+		      🎲 隨機花色
+		    </button>
+		  </div>
+		
+		  <div class="random-row">
+		    <span>花種</span>
+		    <button id="randomFlowerBtn" type="button" class="secondary">
+		      🎲 隨機花種
+		    </button>
+		  </div>
+		
+		  <button id="randomAllBtn" type="button" class="green">
+		    🎲 隨機花色 + 花種
+		  </button>
+		</div>
 
         <div class="field">
           <label for="placeInput">地點 / 花田名稱</label>
