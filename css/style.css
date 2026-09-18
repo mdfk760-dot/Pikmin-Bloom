@@ -663,22 +663,21 @@
         margin-bottom: 28px;
       }
 
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
+.admin-grid {
+  grid-template-columns: 1fr;
+}
 
-      .field.half {
-        grid-column: 1 / -1;
-      }
+.admin-grid > .field {
+  grid-column: 1 / -1;
+}
 
-      .admin-top-grid {
-        grid-template-columns: 1fr;
-      }
+.admin-top-grid {
+  grid-template-columns: 1fr;
+}
 
-      .admin-top-grid .field {
-        grid-column: 1 / -1;
-      }
-
+.admin-top-grid .field {
+  grid-column: 1 / -1;
+}
       .random-row {
         align-items: stretch;
       }
