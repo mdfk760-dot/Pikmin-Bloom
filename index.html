@@ -1,149 +1,541 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>🌸 妖妖_開花公告</title>
-	
-	<link rel="stylesheet" href="css/style.css">
-  <meta name="description" content="妖妖開花公告｜查看最新開花預報、可收果花田與座標資訊。">
 
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="妖妖開花公告">
-  <meta property="og:description" content="查看最新開花預報、可收果花田與座標資訊。">
-  <meta property="og:url" content="">
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  />
+
+  <meta
+    name="description"
+    content="妖妖開花公告｜查看最新開花預報、可收果花田與座標資訊。"
+  />
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    property="og:title"
+    content="妖妖開花公告"
+  />
+
+  <meta
+    property="og:description"
+    content="查看最新開花預報、可收果花田與座標資訊。"
+  />
+
+  <meta
+    property="og:url"
+    content=""
+  />
 </head>
+
+
 <body>
-  <div id="siteUpdateBanner" class="site-update-banner" role="status" aria-live="polite">
-    <div class="site-update-banner-text">🌱 網站有新版本，請重新整理取得最新版。</div>
-    <button id="reloadLatestBtn" type="button">重新整理</button>
+
+  <!-- 網站更新提醒 -->
+  <div
+    id="siteUpdateBanner"
+    class="site-update-banner"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="site-update-banner-text">
+      🌱 網站有新版本，請重新整理取得最新版。
+    </div>
+
+    <button
+      id="reloadLatestBtn"
+      type="button"
+    >
+      重新整理
+    </button>
   </div>
 
+
+  <!-- 標題 -->
   <header>
     <h1>🌸 妖妖開花公告</h1>
-    <p>管理員分享開花成果，其他 User 一鍵複製座標。</p>
+
+    <p>
+      管理員分享開花成果，其他 User 一鍵複製座標。
+    </p>
   </header>
 
+
   <main class="wrap">
+
+    <!-- 搜尋列 -->
     <section class="topbar">
+
       <div class="search-area">
-        <input id="keyword" type="search" placeholder="搜尋地點、花色、花種、備註…" />
+
+        <input
+          id="keyword"
+          type="search"
+          placeholder="搜尋地點、花色、花種、備註…"
+        />
+
         <select id="colorFilter">
-          <option value="">全部花色</option>
+          <option value="">
+            全部花色
+          </option>
         </select>
-        <input id="flowerFilter" type="search" list="flowerFilterList" placeholder="全部花種（可輸入搜尋）" autocomplete="off" />
+
+        <input
+          id="flowerFilter"
+          type="search"
+          list="flowerFilterList"
+          placeholder="全部花種（可輸入搜尋）"
+          autocomplete="off"
+        />
+
         <datalist id="flowerFilterList"></datalist>
+
       </div>
-      <button id="adminLoginBtn" class="secondary">管理員登入</button>
-      <button id="logoutBtn" class="ghost" style="display:none;">登出</button>
+
+      <button
+        id="adminLoginBtn"
+        class="secondary"
+      >
+        管理員登入
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="ghost"
+        style="display:none;"
+      >
+        登出
+      </button>
+
     </section>
 
-    <section id="adminPanel" class="panel admin-panel">
-      <div id="adminPanelHeader" class="admin-panel-header" role="button" tabindex="0" aria-expanded="true" aria-controls="adminPanelBody">
-        <h2 class="admin-panel-title">Admin 管理區</h2>
-        <button id="adminCollapseBtn" class="admin-collapse-btn" type="button" tabindex="-1" aria-hidden="true">▲</button>
+
+    <!-- Admin 管理區 -->
+    <section
+      id="adminPanel"
+      class="panel admin-panel"
+    >
+
+      <!-- Admin 標題列 -->
+      <div
+        id="adminPanelHeader"
+        class="admin-panel-header"
+        role="button"
+        tabindex="0"
+        aria-expanded="true"
+        aria-controls="adminPanelBody"
+      >
+
+        <h2 class="admin-panel-title">
+          Admin 管理區
+        </h2>
+
+        <button
+          id="adminCollapseBtn"
+          class="admin-collapse-btn"
+          type="button"
+          tabindex="-1"
+          aria-hidden="true"
+        >
+          ▲
+        </button>
+
       </div>
 
-      <div id="adminPanelBody" class="admin-panel-body">
-      <div class="admin-grid">
-        <div class="field half">
-          <label for="rawInput">貼上內容</label>
-          <textarea id="rawInput" placeholder="例如：
+
+      <!-- Admin 內容 -->
+      <div
+        id="adminPanelBody"
+        class="admin-panel-body"
+      >
+
+        <div class="admin-grid">
+
+          <!-- ========================= -->
+          <!-- 第一排：三等分 -->
+          <!-- ========================= -->
+
+          <div class="admin-top-grid">
+
+            <!-- 貼上內容 -->
+            <div class="field">
+
+              <label for="rawInput">
+                貼上內容
+              </label>
+
+              <textarea
+                id="rawInput"
+                placeholder="例如：
 &quot;妖妖C左
 🌸紅色菊花25株
 ⏰5/26 12:05
-📝隨意收&quot;"></textarea>
-        </div>
+📝隨意收&quot;"
+              ></textarea>
 
-        <div class="field half">
-          <label for="coordsInput">貼上座標</label>
-          <textarea id="coordsInput" class="coords-box" placeholder="例如：
+            </div>
+
+
+            <!-- 貼上座標 -->
+            <div class="field">
+
+              <label for="coordsInput">
+                貼上座標
+              </label>
+
+              <textarea
+                id="coordsInput"
+                class="coords-box"
+                placeholder="例如：
 25.000000,121.000000
 25.000001,121.000001
-25.000002,121.000002"></textarea>
+25.000002,121.000002"
+              ></textarea>
+
+            </div>
+
+
+            <!-- Random 花朵 -->
+            <div class="field random-panel">
+
+              <label>
+                Random 花朵
+              </label>
+
+
+              <div class="random-row">
+
+                <span>
+                  花色
+                </span>
+
+                <button
+                  id="randomColorBtn"
+                  type="button"
+                  class="secondary"
+                >
+                  🎲 隨機花色
+                </button>
+
+              </div>
+
+
+              <div class="random-row">
+
+                <span>
+                  花種
+                </span>
+
+                <button
+                  id="randomFlowerBtn"
+                  type="button"
+                  class="secondary"
+                >
+                  🎲 隨機花種
+                </button>
+
+              </div>
+
+
+              <button
+                id="randomAllBtn"
+                type="button"
+                class="green"
+              >
+                🎲 隨機花色 + 花種
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- ========================= -->
+          <!-- 第二排 -->
+          <!-- ========================= -->
+
+          <div class="field">
+
+            <label for="placeInput">
+              地點 / 花田名稱
+            </label>
+
+            <input
+              id="placeInput"
+              type="text"
+              placeholder="例如：妖妖C左"
+            />
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="timeInput">
+              開花時間
+            </label>
+
+            <input
+              id="timeInput"
+              type="text"
+              placeholder="例如：5/26 12:05"
+            />
+
+          </div>
+
+
+          <!-- ========================= -->
+          <!-- 第三排 -->
+          <!-- ========================= -->
+
+          <div class="field">
+
+            <label for="colorInput">
+              花朵顏色
+            </label>
+
+            <select id="colorInput"></select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="flowerInput">
+              花朵種類
+            </label>
+
+            <input
+              id="flowerInput"
+              type="search"
+              list="flowerInputList"
+              placeholder="輸入或選擇花種"
+              autocomplete="off"
+            />
+
+            <datalist id="flowerInputList"></datalist>
+
+          </div>
+
+
+          <!-- ========================= -->
+          <!-- 第四排 -->
+          <!-- ========================= -->
+
+          <div class="field">
+
+            <label for="amountInput">
+              株數（自動等於座標數量）
+            </label>
+
+            <input
+              id="amountInput"
+              type="number"
+              min="0"
+              placeholder="依座標數量自動計算"
+              readonly
+            />
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="noteInput">
+              備註
+            </label>
+
+            <input
+              id="noteInput"
+              type="text"
+              placeholder="例如：隨意收"
+            />
+
+          </div>
+
         </div>
 
-        <div class="field">
-          <label for="placeInput">地點 / 花田名稱</label>
-          <input id="placeInput" type="text" placeholder="例如：妖妖C左" />
+
+        <!-- 操作按鈕 -->
+        <div class="actions">
+
+          <button
+            id="parseBtn"
+            class="green"
+          >
+            從公告文字自動解析
+          </button>
+
+          <button id="saveBtn">
+            新增 / 更新公告
+          </button>
+
+          <button
+            id="clearFormBtn"
+            class="ghost"
+          >
+            清空輸入
+          </button>
+
         </div>
 
-        <div class="field">
-          <label for="timeInput">開花時間</label>
-          <input id="timeInput" type="text" placeholder="例如：5/26 12:05" />
+
+        <!-- 提示 -->
+        <div class="hint">
+
+          管理密碼已改由 Google Apps Script 驗證，
+          HTML 不再保存管理密碼。
+
+          <br />
+
+          目前資料會寫入 Google Spreadsheet，
+          所有使用者會讀取同一份公告資料。
+
         </div>
 
-        <div class="field">
-          <label for="colorInput">花朵顏色</label>
-          <select id="colorInput"></select>
-        </div>
-
-        <div class="field">
-          <label for="flowerInput">花朵種類</label>
-          <input id="flowerInput" type="search" list="flowerInputList" placeholder="輸入或選擇花種" autocomplete="off" />
-          <datalist id="flowerInputList"></datalist>
-        </div>
-
-        <div class="field">
-          <label for="amountInput">株數（自動等於座標數量）</label>
-          <input id="amountInput" type="number" min="0" placeholder="依座標數量自動計算" readonly />
-        </div>
-
-        <div class="field">
-          <label for="noteInput">備註</label>
-          <input id="noteInput" type="text" placeholder="例如：隨意收" />
-        </div>
       </div>
 
-      <div class="actions">
-        <button id="parseBtn" class="green">從公告文字自動解析</button>
-        <button id="saveBtn">新增 / 更新公告</button>
-        <button id="clearFormBtn" class="ghost">清空輸入</button>
-      </div>
-
-      <div class="hint">
-        管理密碼已改由 Google Apps Script 驗證，HTML 不再保存管理密碼。<br />
-        目前資料會寫入 Google Spreadsheet，所有使用者會讀取同一份公告資料。
-      </div>
-      </div>
     </section>
 
-<div id="loadingMessage" class="empty" style="display:block;">
-  🌱 皮克敏正在搬運花田資料，請稍後...
-</div>
 
-<section id="cards" class="cards"></section>
+    <!-- Loading -->
+    <div
+      id="loadingMessage"
+      class="empty"
+      style="display:block;"
+    >
+      🌱 皮克敏正在搬運花田資料，請稍後...
+    </div>
 
-<div id="empty" class="empty">
-  目前沒有符合條件的開花公告。
-</div>
+
+    <!-- 公告內容 -->
+    <section
+      id="cards"
+      class="cards"
+    ></section>
+
+
+    <!-- 無資料 -->
+    <div
+      id="empty"
+      class="empty"
+    >
+      目前沒有符合條件的開花公告。
+    </div>
+
   </main>
 
-  <footer class="page-footer-note">本頁面僅透過妖妖本人分享於【疲勞部私人群組】、【皮克敏飛人交流群】、【pikmin bloom皮皮之家】，並無授權其他社群使用。</footer>
 
+  <!-- Footer -->
+  <footer class="page-footer-note">
+    本頁面僅透過妖妖本人分享於【疲勞部私人群組】、
+    【皮克敏飛人交流群】、
+    【pikmin bloom皮皮之家】，
+    並無授權其他社群使用。
+  </footer>
+
+
+  <!-- 登入視窗 -->
   <dialog id="loginDialog">
-    <button id="closeLoginBtn" type="button" aria-label="關閉登入視窗" title="關閉">&times;</button>
-    <h3 style="margin:0 44px 0 0;">管理權限登入</h3>
-    <p style="color:var(--muted);line-height:1.6;">只有管理員才可以登入，別再問我密碼。</p>
+
+    <button
+      id="closeLoginBtn"
+      type="button"
+      aria-label="關閉登入視窗"
+      title="關閉"
+    >
+      &times;
+    </button>
+
+    <h3 style="margin:0 44px 0 0;">
+      管理權限登入
+    </h3>
+
+    <p
+      style="
+        color:var(--muted);
+        line-height:1.6;
+      "
+    >
+      只有管理員才可以登入，別再問我密碼。
+    </p>
+
     <div class="small-row">
-      <input id="passwordInput" type="password" placeholder="請輸入密碼" />
-      <button id="confirmLoginBtn">登入</button>
+
+      <input
+        id="passwordInput"
+        type="password"
+        placeholder="請輸入密碼"
+      />
+
+      <button id="confirmLoginBtn">
+        登入
+      </button>
+
     </div>
+
   </dialog>
 
-  <div id="toast" class="toast"></div>
 
-  <aside class="notice-float" aria-label="收果提醒事項">
-    <p class="notice-float-title">收果提醒</p>
+  <!-- Toast -->
+  <div
+    id="toast"
+    class="toast"
+  ></div>
+
+
+  <!-- 收果提醒 -->
+  <aside
+    class="notice-float"
+    aria-label="收果提醒事項"
+  >
+
+    <p class="notice-float-title">
+      收果提醒
+    </p>
+
     <ul class="notice-float-list">
-      <li class="no">✗ 請勿轉傳 &amp; 請勿偷田</li>
-      <li class="no">✗ 請勿踩踏沒有提供的座標</li>
-      <li class="no">✗ 收果後請刪檔避免開錯檔誤踩</li>
-      <li class="yes">✓ 開花後僅第𝟏小時會有果實</li>
-      <li class="yes">✓ 花瓣不夠可只派𝟏皮種花</li>
+
+      <li class="no">
+        ✗ 請勿轉傳 &amp; 請勿偷田
+      </li>
+
+      <li class="no">
+        ✗ 請勿踩踏沒有提供的座標
+      </li>
+
+      <li class="no">
+        ✗ 收果後請刪檔避免開錯檔誤踩
+      </li>
+
+      <li class="yes">
+        ✓ 開花後僅第𝟏小時會有果實
+      </li>
+
+      <li class="yes">
+        ✓ 花瓣不夠可只派𝟏皮種花
+      </li>
+
     </ul>
+
   </aside>
+
+
+  <!-- JavaScript -->
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -152,4 +544,5 @@
   <script src="js/app.js"></script>
 
 </body>
+
 </html>
