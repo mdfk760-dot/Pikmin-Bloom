@@ -213,54 +213,62 @@
       display: none;
     }
 
-	.admin-grid {
-	  display: grid;
-	  grid-template-columns: repeat(6, minmax(0, 1fr));
-	  gap: 14px;
-	}
-	
-	.field.full {
-	  grid-column: 1 / -1;
-	}
-	
-	.field.half {
-	  grid-column: span 3;
-	}
-	
-	.field.third {
-	  grid-column: span 2;
-	}
-	
-	/* 原本一般輸入欄位維持左右兩欄 */
-	.field:not(.full):not(.half):not(.third) {
-	  grid-column: span 3;
-	}
-	
-	
-	/* Random 區域 */
-	.random-panel {
-	  display: flex;
-	  flex-direction: column;
-	  gap: 10px;
-	}
-	
-	.random-row {
-	  display: flex;
-	  align-items: center;
-	  justify-content: space-between;
-	  gap: 10px;
-	}
-	
-	.random-row span {
-	  flex-shrink: 0;
-	}
-	
-	.random-panel > button {
-	  width: 100%;
-	}
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
 
     .field.full { grid-column: 1 / -1; }
     .field.half { grid-column: span 1; }
+
+    /* Admin 上方：貼上內容 / 貼上座標 / Random 花朵 */
+    .admin-top-grid {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .admin-top-grid .field {
+      min-width: 0;
+    }
+
+    .admin-top-grid textarea {
+      height: 100%;
+      min-height: 220px;
+    }
+
+    .random-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100%;
+    }
+
+    .random-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .random-row span {
+      flex: 0 0 auto;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .random-row button {
+      width: auto;
+      flex: 1;
+    }
+
+    .random-panel > button {
+      width: 100%;
+    }
 
     .field label {
       display: block;
@@ -642,16 +650,25 @@
         margin-bottom: 28px;
       }
 
-		.admin-grid {
-		  grid-template-columns: 1fr;
-		}
-		
-		.field.full,
-		.field.half,
-		.field.third,
-		.field:not(.full):not(.half):not(.third) {
-		  grid-column: 1 / -1;
-		}
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.half {
+        grid-column: 1 / -1;
+      }
+
+      .admin-top-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-top-grid .field {
+        grid-column: 1 / -1;
+      }
+
+      .random-row {
+        align-items: stretch;
+      }
       .topbar { align-items: stretch; }
       .search-area,
       .topbar > button { width: 100%; }
