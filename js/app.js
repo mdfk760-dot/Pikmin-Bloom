@@ -895,6 +895,15 @@ $("parseBtn").addEventListener("click", () => {
     $("flowerFilter").addEventListener("input", renderReports);
     $("flowerFilter").addEventListener("change", renderReports);
 
+    $("clearFiltersBtn").addEventListener("click", () => {
+      $("keyword").value = "";
+      $("colorFilter").value = "";
+      $("flowerFilter").value = "";
+      renderReports();
+      $("keyword").focus();
+      showToast("已清除篩選");
+    });
+
     $("adminLoginBtn").addEventListener("click", () => $("loginDialog").showModal());
     $("closeLoginBtn").addEventListener("click", () => $("loginDialog").close());
     $("passwordInput").addEventListener("keydown", event => {
@@ -926,17 +935,65 @@ $("parseBtn").addEventListener("click", () => {
         return;
       }
 
-      accessPassword = inputPassword;
-      sessionStorage.setItem("pikminAccessPassword", inputPassword);
+      if (result.role === "admin") {
+        if (!result.adminToken) {
+          alert("Admin Token 取得失敗，請確認 Apps Script 已更新並重新部署。");
+          return;
+        }
+
+        adminToken = result.adminToken;
+        adminTokenExpiresAt =
+          result.adminTokenExpiresAt || "";
+
+        sessionStorage.setItem(
+          "pikminAdminToken",
+          adminToken
+        );
+        sessionStorage.setItem(
+          "pikminAdminTokenExpiresAt",
+          adminTokenExpiresAt
+        );
+
+        // Admin 密碼不留在前端。
+        accessPassword = "";
+        sessionStorage.removeItem(
+          "pikminAccessPassword"
+        );
+
+        if (Array.isArray(result.withers)) {
+          withers = result.withers;
+        }
+
+      } else {
+        accessPassword = inputPassword;
+        sessionStorage.setItem(
+          "pikminAccessPassword",
+          inputPassword
+        );
+
+        adminToken = "";
+        adminTokenExpiresAt = "";
+        sessionStorage.removeItem(
+          "pikminAdminToken"
+        );
+        sessionStorage.removeItem(
+          "pikminAdminTokenExpiresAt"
+        );
+      }
+
+      if (result.dataVersion) {
+        currentDataVersion =
+          result.dataVersion;
+      }
+
       $("passwordInput").value = "";
       $("loginDialog").close();
       setAccessMode(result.role);
 
-		// 密碼驗證成功後，立即進入對應權限模式。
-		// Reports / 私田資料改在背景載入，不阻塞 Admin 介面顯示。
-		
-		const restoredProtected =
-		  restoreReportsSnapshot(result.role);
+      // 密碼驗證成功後，立即進入對應權限模式。
+      // Reports / 私田資料改在背景載入，不阻塞 Admin 介面顯示。
+      const restoredProtected =
+        restoreReportsSnapshot(result.role);
 		
 		// 先立即告知登入成功。
 		showToast(
@@ -955,10 +1012,12 @@ $("parseBtn").addEventListener("click", () => {
 
     $("logoutBtn").addEventListener("click", () => {
       const wasAdmin = isAdmin;
+      const tokenToRevoke =
+        wasAdmin ? adminToken : "";
+
       clearForm();
 
       // 登出瞬間先在記憶體中移除所有私田，絕不等待 API 回應。
-      // 這樣即使 Google Apps Script 很慢，私田也不會繼續留在畫面上。
       const publicOnlyReports = reports.filter(report =>
         !String(report && report.place || "").includes("私")
       );
@@ -967,17 +1026,31 @@ $("parseBtn").addEventListener("click", () => {
       clearAccessSession();
       accessRole = "public";
       reports = publicOnlyReports;
+      withers = [];
       hasDisplayedReportSnapshot = true;
       saveReportsSnapshot("public", reports);
       setAccessMode("public");
       renderReports();
 
-      showToast(wasAdmin ? "已離開 Admin 管理模式" : "已離開私田模式");
+      showToast(
+        wasAdmin
+          ? "已離開 Admin 管理模式"
+          : "已離開私田模式"
+      );
 
-      // 背景再向後端同步最新公開田，不阻塞登出。
-      refreshReports({ force: true, showLoading: false });
+      // Admin Token 在伺服器端同步撤銷，不阻塞畫面。
+      if (tokenToRevoke) {
+        logoutAdminSession(
+          tokenToRevoke
+        );
+      }
+
+      // 背景再向後端同步最新公開田。
+      refreshReports({
+        force: true,
+        showLoading: false
+      });
     });
-
 
 
     $("reloadLatestBtn").addEventListener("click", () => {
@@ -1119,6 +1192,72 @@ document.addEventListener(
   }
 );
 
+    function enableNoticeCollapse() {
+      const notice =
+        document.querySelector(".notice-float");
+      const button =
+        $("noticeToggleBtn");
+
+      if (!notice || !button) return;
+
+      const storageKey =
+        "pikminNoticeFloatCollapsed";
+
+      let collapsed =
+        localStorage.getItem(
+          storageKey
+        ) === "true";
+
+      function applyState() {
+        notice.classList.toggle(
+          "collapsed",
+          collapsed
+        );
+
+        button.textContent =
+          collapsed ? "＋" : "－";
+
+        button.setAttribute(
+          "aria-expanded",
+          collapsed ? "false" : "true"
+        );
+
+        button.setAttribute(
+          "title",
+          collapsed
+            ? "展開收果提醒"
+            : "收合收果提醒"
+        );
+      }
+
+      button.addEventListener(
+        "pointerdown",
+        event => {
+          event.stopPropagation();
+        }
+      );
+
+      button.addEventListener(
+        "click",
+        event => {
+          event.stopPropagation();
+          collapsed = !collapsed;
+
+          localStorage.setItem(
+            storageKey,
+            collapsed
+              ? "true"
+              : "false"
+          );
+
+          applyState();
+        }
+      );
+
+      applyState();
+    }
+
+
     function enableMobileNoticeDrag() {
       const notice = document.querySelector(".notice-float");
       if (!notice) return;
@@ -1172,6 +1311,12 @@ document.addEventListener(
       }
 
       notice.addEventListener("pointerdown", event => {
+        if (
+          event.target.closest("#noticeToggleBtn")
+        ) {
+          return;
+        }
+
         if (!mobileMedia.matches || event.button !== 0) return;
 
         const rect = notice.getBoundingClientRect();
@@ -1216,32 +1361,95 @@ document.addEventListener(
     }
 
     async function initializeAccessAndReports() {
-      // 先記錄目前 GitHub Pages 的發布指紋，之後有更新就能通知仍開著舊頁面的使用者。
-      await checkForSiteUpdate({ initialize: true });
+      await checkForSiteUpdate({
+        initialize: true
+      });
 
       fillOptions();
+      enableNoticeCollapse();
       enableMobileNoticeDrag();
+      updateDataStatusDisplay();
 
-      // 沒有本分頁登入憑證時，不保留任何私田備援。
-      if (!accessPassword) clearProtectedReportsSnapshot();
+      // 新版 Admin 優先驗證短效 Token。
+      if (adminToken) {
+        const sessionResult =
+          await verifyAdminSession();
 
-      if (accessPassword) {
-        const result = await verifyAccessPassword(accessPassword);
-        if (result.success && ["private", "admin"].includes(result.role)) {
-          setAccessMode(result.role);
+        if (
+          sessionResult.success &&
+          sessionResult.role === "admin"
+        ) {
+          setAccessMode("admin");
         } else {
           clearAccessSession();
           setAccessMode("public");
         }
+
+      } else if (accessPassword) {
+        // Private 模式仍維持分頁內密碼。
+        // 若瀏覽器殘留舊版 Admin 密碼，登入成功後會自動轉成 Token。
+        const result =
+          await verifyAccessPassword(
+            accessPassword
+          );
+
+        if (
+          result.success &&
+          ["private", "admin"].includes(
+            result.role
+          )
+        ) {
+          if (
+            result.role === "admin" &&
+            result.adminToken
+          ) {
+            adminToken =
+              result.adminToken;
+            adminTokenExpiresAt =
+              result.adminTokenExpiresAt || "";
+
+            sessionStorage.setItem(
+              "pikminAdminToken",
+              adminToken
+            );
+            sessionStorage.setItem(
+              "pikminAdminTokenExpiresAt",
+              adminTokenExpiresAt
+            );
+
+            accessPassword = "";
+            sessionStorage.removeItem(
+              "pikminAccessPassword"
+            );
+          }
+
+          setAccessMode(result.role);
+
+        } else {
+          clearAccessSession();
+          setAccessMode("public");
+        }
+
       } else {
+        clearProtectedReportsSnapshot();
         setAccessMode("public");
       }
 
-      hasDisplayedReportSnapshot = false;
-      const restoredSnapshot = restoreReportsSnapshot(accessRole);
-      await refreshReports({ force: true, showLoading: !restoredSnapshot });
+      hasDisplayedReportSnapshot =
+        false;
+
+      const restoredSnapshot =
+        restoreReportsSnapshot(
+          accessRole
+        );
+
+      await refreshReports({
+        force: true,
+        showLoading: !restoredSnapshot
+      });
+
       startDataVersionTimer();
-	  startSiteUpdateTimer();
+      startSiteUpdateTimer();
     }
 
     initializeAccessAndReports();
