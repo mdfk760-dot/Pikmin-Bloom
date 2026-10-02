@@ -107,6 +107,14 @@
       </div>
 
       <button
+        id="clearFiltersBtn"
+        class="ghost clear-filters-btn"
+        type="button"
+      >
+        清除篩選
+      </button>
+
+      <button
         id="adminLoginBtn"
         class="secondary"
       >
@@ -122,6 +130,14 @@
       </button>
 
     </section>
+
+    <div
+      id="lastUpdatedStatus"
+      class="last-updated-status"
+      aria-live="polite"
+    >
+      最後更新：尚未同步
+    </div>
 
 
     <!-- Admin 管理區 -->
@@ -236,6 +252,41 @@
           </button>
 
         </div>
+
+
+        <!-- 系統狀態 -->
+        <section class="admin-system-section" aria-label="系統狀態">
+          <div class="admin-system-header">
+            <h3>⚙️ 系統狀態</h3>
+          </div>
+
+          <div class="admin-system-grid">
+            <div class="admin-system-item">
+              <span>資料連線</span>
+              <strong id="systemConnectionStatus">尚未同步</strong>
+            </div>
+
+            <div class="admin-system-item">
+              <span>最後同步</span>
+              <strong id="systemLastSync">尚未同步</strong>
+            </div>
+
+            <div class="admin-system-item">
+              <span>資料版本</span>
+              <strong id="systemDataVersion">尚未取得</strong>
+            </div>
+
+            <div class="admin-system-item">
+              <span>即將凋謝</span>
+              <strong id="systemWitherCount">0 筆</strong>
+            </div>
+
+            <div class="admin-system-item">
+              <span>Admin Session</span>
+              <strong id="systemAdminSession">未登入</strong>
+            </div>
+          </div>
+        </section>
 
 
         <!-- 即將凋謝 -->
@@ -360,11 +411,25 @@
     aria-label="收果提醒事項"
   >
 
-    <p class="notice-float-title">
-      收果提醒
-    </p>
+    <div class="notice-float-header">
+      <p class="notice-float-title">
+        收果提醒
+      </p>
 
-    <ul class="notice-float-list">
+      <button
+        id="noticeToggleBtn"
+        class="notice-toggle-btn"
+        type="button"
+        aria-expanded="true"
+        aria-controls="noticeFloatBody"
+        title="收合收果提醒"
+      >
+        －
+      </button>
+    </div>
+
+    <div id="noticeFloatBody" class="notice-float-body">
+      <ul class="notice-float-list">
 
       <li class="no">
         ✗ 請勿轉傳 &amp; 請勿偷田
@@ -386,7 +451,8 @@
         ✓ 花瓣不夠可只派𝟏皮種花
       </li>
 
-    </ul>
+      </ul>
+    </div>
 
   </aside>
 
