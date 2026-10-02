@@ -9,9 +9,14 @@
     let reports = [];
     let withers = [];
     let editingId = null;
+
+    // Private 模式仍使用該分頁內的私田密碼；
+    // Admin 模式改用 Apps Script 發出的短效 Token，不保存管理密碼。
     let accessPassword = sessionStorage.getItem("pikminAccessPassword") || "";
+    let adminToken = sessionStorage.getItem("pikminAdminToken") || "";
+    let adminTokenExpiresAt = sessionStorage.getItem("pikminAdminTokenExpiresAt") || "";
+
     let accessRole = "public"; // public | private | admin
-    let adminPassword = "";
     let isAdmin = false;
     let toastTimer = null;
 	let reportTransitionTimer = null;
@@ -30,6 +35,8 @@
     const PROTECTED_REPORT_CACHE_KEY = "pikminReportsProtectedCacheV1";
     const FRONTEND_CACHE_MAX_AGE = CONFIG.FRONTEND_CACHE_MAX_AGE;
     let hasDisplayedReportSnapshot = false;
+    let lastSuccessfulDataLoadAt = 0;
+    let isShowingFallbackData = false;
 
     // 公告即時性：前景每 12 秒只檢查極小的資料版本值。
     // 版本有變才重新抓完整公告，避免高頻讀取 Spreadsheet。
@@ -156,6 +163,9 @@
 
         reports = snapshot.reports;
         hasDisplayedReportSnapshot = true;
+        lastSuccessfulDataLoadAt = Number(snapshot.savedAt);
+        isShowingFallbackData = true;
+        updateDataStatusDisplay();
         renderReports();
         return true;
       } catch (error) {
@@ -180,6 +190,98 @@
       toastTimer = setTimeout(() => toast.classList.remove("active"), 1600);
     }
 
+    function formatStatusTime(timestamp) {
+      const value = Number(timestamp || 0);
+      if (!value) return "尚未同步";
+
+      return new Intl.DateTimeFormat(
+        "zh-TW",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }
+      ).format(new Date(value));
+    }
+
+    function formatAdminSessionExpiry() {
+      if (!adminTokenExpiresAt) return "未登入";
+
+      const date = new Date(adminTokenExpiresAt);
+      if (Number.isNaN(date.getTime())) {
+        return "已登入";
+      }
+
+      return new Intl.DateTimeFormat(
+        "zh-TW",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }
+      ).format(date);
+    }
+
+    function updateDataStatusDisplay() {
+      const publicStatus = $("lastUpdatedStatus");
+
+      if (publicStatus) {
+        const prefix =
+          isShowingFallbackData
+            ? "⚠ 目前顯示上次成功資料 · "
+            : "";
+
+        publicStatus.textContent =
+          `${prefix}最後更新：${formatStatusTime(lastSuccessfulDataLoadAt)}`;
+      }
+
+      const connection =
+        $("systemConnectionStatus");
+      const sync =
+        $("systemLastSync");
+      const version =
+        $("systemDataVersion");
+      const wither =
+        $("systemWitherCount");
+      const session =
+        $("systemAdminSession");
+
+      if (connection) {
+        connection.textContent =
+          isShowingFallbackData
+            ? "備援資料"
+            : lastSuccessfulDataLoadAt
+              ? "正常"
+              : "尚未同步";
+      }
+
+      if (sync) {
+        sync.textContent =
+          formatStatusTime(
+            lastSuccessfulDataLoadAt
+          );
+      }
+
+      if (version) {
+        version.textContent =
+          currentDataVersion || "尚未取得";
+      }
+
+      if (wither) {
+        wither.textContent =
+          `${Array.isArray(withers) ? withers.length : 0} 筆`;
+      }
+
+      if (session) {
+        session.textContent =
+          isAdmin
+            ? `有效至 ${formatAdminSessionExpiry()}`
+            : "未登入";
+      }
+    }
+
+
     function fillOptions() {
       for (const color of COLORS) {
         $("colorInput").append(new Option(color, color));
@@ -202,24 +304,30 @@
 
     function clearAccessSession() {
       accessPassword = "";
-      adminPassword = "";
+      adminToken = "";
+      adminTokenExpiresAt = "";
+
       sessionStorage.removeItem("pikminAccessPassword");
+      sessionStorage.removeItem("pikminAdminToken");
+      sessionStorage.removeItem("pikminAdminTokenExpiresAt");
+
       // 清掉舊版曾使用的登入狀態。
       sessionStorage.removeItem("pikminAdminPassword");
       sessionStorage.removeItem("pikminAdmin");
+
       clearProtectedReportsSnapshot();
+      updateDataStatusDisplay();
     }
 
     function setAccessMode(role) {
       accessRole = ["private", "admin"].includes(role) ? role : "public";
       isAdmin = accessRole === "admin";
-      adminPassword = isAdmin ? accessPassword : "";
 
-	  if (isAdmin) {
-  		updateSiteUrlOnServer(
-    	  SITE_URL
-  		);
-	  }
+      if (isAdmin && adminToken) {
+        updateSiteUrlOnServer(
+          SITE_URL
+        );
+      }
 
       document.body.classList.toggle("admin-on", isAdmin);
       $("adminPanel").classList.toggle("active", isAdmin);
@@ -231,6 +339,7 @@
         setAdminPanelCollapsed(sessionStorage.getItem("pikminAdminPanelCollapsed") === "true");
       }
 
+      updateDataStatusDisplay();
       renderReports();
     }
 
