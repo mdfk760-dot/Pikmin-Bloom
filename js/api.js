@@ -33,7 +33,6 @@ function wait(ms) {
 
 async function loadReportsOnce() {
   const requestRole = accessRole;
-  const requestPassword = accessPassword;
 
   let res;
 
@@ -49,11 +48,17 @@ async function loadReportsOnce() {
           "Content-Type":
             "text/plain;charset=utf-8"
         },
-        body: JSON.stringify({
-          action: "list",
-          accessPassword:
-            requestPassword
-        })
+        body: JSON.stringify(
+          requestRole === "admin"
+            ? {
+                action: "list",
+                adminToken
+              }
+            : {
+                action: "list",
+                accessPassword
+              }
+        )
       },
       REPORT_FETCH_TIMEOUT
     );
@@ -80,7 +85,11 @@ async function loadReportsOnce() {
         requestRole === "private" ||
         requestRole === "admin"
       ) &&
-      data.code === "INVALID_ACCESS"
+      (
+        data.code === "INVALID_ACCESS" ||
+        data.code === "ADMIN_SESSION_EXPIRED" ||
+        data.code === "ADMIN_REQUIRED"
+      )
     ) {
       clearAccessSession();
       setAccessMode("public");
@@ -132,6 +141,10 @@ async function loadReportsOnce() {
 
   hasDisplayedReportSnapshot =
     true;
+
+  lastSuccessfulDataLoadAt = Date.now();
+  isShowingFallbackData = false;
+  updateDataStatusDisplay();
 
   return true;
 }
@@ -216,6 +229,9 @@ async function loadReports() {
     );
 
   if (hasFallback) {
+    isShowingFallbackData = true;
+    updateDataStatusDisplay();
+
     showToast(
       timedOut
         ? "連線較慢，目前先顯示上次成功資料"
@@ -270,6 +286,14 @@ async function verifyAccessPasswordOnce(
   return {
     success: !!data.success,
     role: data.role || "public",
+    adminToken:
+      data.adminToken || "",
+    adminTokenExpiresAt:
+      data.adminTokenExpiresAt || "",
+    withers:
+      Array.isArray(data.withers)
+        ? data.withers
+        : null,
     reports:
       Array.isArray(data.reports)
         ? data.reports
@@ -332,23 +356,150 @@ async function verifyAccessPassword(
   };
 }
 
+async function verifyAdminSession() {
+  if (!adminToken) {
+    return {
+      success: false,
+      role: "public"
+    };
+  }
+
+  try {
+    const res = await fetchWithTimeout(
+      CONFIG.API_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "verifySession",
+          adminToken
+        })
+      },
+      ACCESS_VERIFY_TIMEOUTS[0]
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `HTTP ${res.status}`
+      );
+    }
+
+    return await res.json();
+
+  } catch (error) {
+    console.warn(
+      "Admin Session 驗證失敗",
+      error
+    );
+
+    return {
+      success: false,
+      role: "public"
+    };
+  }
+}
+
+async function logoutAdminSession(
+  token = adminToken
+) {
+  if (!token) return true;
+
+  try {
+    await fetchWithTimeout(
+      CONFIG.API_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "logoutSession",
+          adminToken: token
+        })
+      },
+      8000
+    );
+
+    return true;
+
+  } catch (error) {
+    console.debug(
+      "伺服器端 Admin Session 登出失敗",
+      error
+    );
+    return false;
+  }
+}
+
+async function runAdminAction(
+  action,
+  extraData = {}
+) {
+  if (!adminToken) {
+    showToast(
+      "管理員登入已逾時，請重新登入"
+    );
+    return null;
+  }
+
+  const res = await fetchWithTimeout(
+    CONFIG.API_URL,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action,
+        adminToken,
+        ...extraData
+      })
+    },
+    REPORT_FETCH_TIMEOUT
+  );
+
+  if (!res.ok) {
+    throw new Error(
+      `HTTP ${res.status}`
+    );
+  }
+
+  const data = await res.json();
+
+  if (
+    !data.success &&
+    (
+      data.code === "ADMIN_SESSION_EXPIRED" ||
+      data.code === "ADMIN_REQUIRED"
+    )
+  ) {
+    clearAccessSession();
+    setAccessMode("public");
+    showToast(
+      "管理員登入已逾時，請重新登入"
+    );
+    return null;
+  }
+
+  return data;
+}
+
+
 async function saveReportToSheet(
   report
 ) {
   try {
-    const res = await fetch(
-      CONFIG.API_URL,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          action: "save",
-          adminPassword,
-          report
-        })
-      }
+    const data = await runAdminAction(
+      "save",
+      { report }
     );
 
-    const data = await res.json();
+    if (!data) return false;
 
     if (!data.success) {
       alert(
@@ -376,19 +527,12 @@ async function deleteReportFromSheet(
   id
 ) {
   try {
-    const res = await fetch(
-      CONFIG.API_URL,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          action: "delete",
-          adminPassword,
-          id
-        })
-      }
+    const data = await runAdminAction(
+      "delete",
+      { id }
     );
 
-    const data = await res.json();
+    if (!data) return false;
 
     if (!data.success) {
       alert(
@@ -413,56 +557,25 @@ async function deleteReportFromSheet(
 }
 
 async function updateSiteUrlOnServer(siteUrl) {
-  if (!adminPassword || !siteUrl) {
-    console.warn(
-      "網站網址未同步：目前不是 Admin 或網址不存在"
-    );
+  if (!adminToken || !siteUrl) {
     return false;
   }
 
   try {
-    console.log(
-      "開始同步網站網址：" + siteUrl
+    const data = await runAdminAction(
+      "updateSiteUrl",
+      { siteUrl }
     );
 
-    const res = await fetch(
-      CONFIG.API_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify({
-          action: "updateSiteUrl",
-          adminPassword,
-          siteUrl
-        }),
-        cache: "no-store"
-      }
-    );
-
-    if (!res.ok) {
-      throw new Error(
-        `HTTP ${res.status}`
-      );
-    }
-
-    const data = await res.json();
+    if (!data) return false;
 
     if (!data.success) {
       console.warn(
         "網站網址同步失敗：" +
         (data.message || "未知錯誤")
       );
-
       return false;
     }
-
-    console.log(
-      "網站網址已同步：" +
-      data.siteUrl
-    );
 
     return true;
 
@@ -471,7 +584,6 @@ async function updateSiteUrlOnServer(siteUrl) {
       "網站網址同步失敗：",
       error
     );
-
     return false;
   }
 }
