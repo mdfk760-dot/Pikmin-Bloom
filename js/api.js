@@ -112,6 +112,12 @@ async function loadReportsOnce() {
       ? data.reports
       : [];
 
+  withers =
+    requestRole === "admin" &&
+    Array.isArray(data.withers)
+      ? data.withers
+      : [];
+
   if (
     data.dataVersion != null
   ) {
