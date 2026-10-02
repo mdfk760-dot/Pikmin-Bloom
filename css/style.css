@@ -249,6 +249,104 @@
       margin-top: 14px;
     }
 
+
+    .admin-wither-section {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255, 248, 242, 0.72);
+    }
+
+    .admin-wither-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .admin-wither-header h3 {
+      margin: 0;
+      font-size: 15px;
+      color: var(--green-dark);
+    }
+
+    .admin-wither-count {
+      min-width: 28px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .admin-wither-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .admin-wither-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .admin-wither-place {
+      min-width: 0;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .admin-wither-time {
+      color: var(--text);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .admin-wither-left {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .admin-wither-empty {
+      padding: 12px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    details.expired-section > summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    details.expired-section > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.expired-section > summary::after {
+      content: "▼";
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.15s ease;
+    }
+
+    details.expired-section[open] > summary::after {
+      transform: rotate(180deg);
+    }
+
     .hint {
       margin-top: 10px;
       color: var(--muted);
@@ -777,6 +875,15 @@
       .notice-float-list {
         font-size: 13px;
         gap: 5px;
+      }
+
+      .admin-wither-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .admin-wither-place {
+        white-space: normal;
       }
 
     }
