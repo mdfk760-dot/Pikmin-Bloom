@@ -413,7 +413,7 @@ function buildCopyContent(report) {
         if (!list.length) return "";
 
         return `
-          <div class="result-section-title">開花預報 <span class="sub">目前正處於未開花 / 開花中，暫不提供座標，開花完畢後會轉移到可收果區域</span></div>
+          <div class="result-section-title">開花預報（${list.length}） <span class="sub">目前正處於未開花 / 開花中，暫不提供座標，開花完畢後會轉移到可收果區域</span></div>
           <div class="result-table preview-table">
             <div class="result-row result-header preview-row">
               <div class="result-cell">花朵</div>
@@ -450,7 +450,7 @@ function buildCopyContent(report) {
         if (!list.length) return "";
 
         return `
-          <div class="result-section-title">可收果區域 <span class="sub">預計開花時間後 1 小時內提供座標</span></div>
+          <div class="result-section-title">可收果區域（${list.length}） <span class="sub">預計開花時間後 1 小時內提供座標</span></div>
           <div class="result-table active-table">
             <div class="result-row result-header">
               <div class="result-cell">花田名稱</div>
@@ -493,36 +493,41 @@ function buildCopyContent(report) {
         if (!list.length) return "";
 
         return `
-          <div class="result-section-title">過期區域 <span class="sub">預計開花時間超過 1 小時，不提供座標</span></div>
-          <div class="result-table expired-table">
-            <div class="result-row result-header expired-row">
-              <div class="result-cell">花田名稱</div>
-              <div class="result-cell">花朵</div>
-              <div class="result-cell">開花時間</div>
-              <div class="result-cell">備註</div>
-              <div class="result-cell">狀態 / 操作</div>
-            </div>
-            ${list.map(report => {
-              const flowerText = `${report.color || "未填花色"}${report.flower || "未填花種"}${report.amount ? report.amount + "株" : ""}`;
-              return `
-                <div class="result-row expired-row">
-                  <div class="result-cell result-place"><span class="mobile-label">花田</span>${escapeHtml(report.place || "未命名花田")}</div>
-                  <div class="result-cell result-flower"><span class="mobile-label">花朵</span>🌸 ${escapeHtml(flowerText)}</div>
-                  <div class="result-cell"><span class="mobile-label">時間</span>⏰ ${escapeHtml(formatDisplayTime(report.time) || "未填時間")}</div>
-                  <div class="result-cell"><span class="mobile-label">備註</span>📝 ${escapeHtml(report.note || "無備註")}</div>
-                  <div class="result-cell">
-                    <div class="row-actions">
-                      <span class="expired-status">已過期</span>
-                      <span class="admin-actions">
-                        <button class="green" onclick="editReport('${report.id}')">編輯</button>
-                        <button class="danger" onclick="deleteReport('${report.id}')">刪除</button>
-                      </span>
+          <details class="expired-section">
+            <summary class="result-section-title">
+              過期區域（${list.length}）
+              <span class="sub">預計開花時間超過 1 小時，不提供座標</span>
+            </summary>
+            <div class="result-table expired-table">
+              <div class="result-row result-header expired-row">
+                <div class="result-cell">花田名稱</div>
+                <div class="result-cell">花朵</div>
+                <div class="result-cell">開花時間</div>
+                <div class="result-cell">備註</div>
+                <div class="result-cell">狀態 / 操作</div>
+              </div>
+              ${list.map(report => {
+                const flowerText = `${report.color || "未填花色"}${report.flower || "未填花種"}${report.amount ? report.amount + "株" : ""}`;
+                return `
+                  <div class="result-row expired-row">
+                    <div class="result-cell result-place"><span class="mobile-label">花田</span>${escapeHtml(report.place || "未命名花田")}</div>
+                    <div class="result-cell result-flower"><span class="mobile-label">花朵</span>🌸 ${escapeHtml(flowerText)}</div>
+                    <div class="result-cell"><span class="mobile-label">時間</span>⏰ ${escapeHtml(formatDisplayTime(report.time) || "未填時間")}</div>
+                    <div class="result-cell"><span class="mobile-label">備註</span>📝 ${escapeHtml(report.note || "無備註")}</div>
+                    <div class="result-cell">
+                      <div class="row-actions">
+                        <span class="expired-status">已過期</span>
+                        <span class="admin-actions">
+                          <button class="green" onclick="editReport('${report.id}')">編輯</button>
+                          <button class="danger" onclick="deleteReport('${report.id}')">刪除</button>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              `;
-            }).join("")}
-          </div>
+                `;
+              }).join("")}
+            </div>
+          </details>
         `;
       }
 
