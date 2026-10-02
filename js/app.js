@@ -7,6 +7,7 @@
     if (ogUrlMeta) ogUrlMeta.setAttribute("content", SITE_URL);
 
     let reports = [];
+    let withers = [];
     let editingId = null;
     let accessPassword = sessionStorage.getItem("pikminAccessPassword") || "";
     let accessRole = "public"; // public | private | admin
@@ -381,7 +382,100 @@ function buildCopyContent(report) {
 }
 
 
+    function formatWitherTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hour = String(date.getHours()).padStart(2, "0");
+      const minute = String(date.getMinutes()).padStart(2, "0");
+
+      return `${month}/${day} ${hour}:${minute}`;
+    }
+
+    function formatWitherRemaining(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+
+      const minutes = Math.max(
+        0,
+        Math.ceil((date.getTime() - Date.now()) / 60000)
+      );
+
+      if (minutes <= 0) return "即將凋謝";
+
+      const hours = Math.floor(minutes / 60);
+      const remainMinutes = minutes % 60;
+
+      if (hours <= 0) return `剩餘 ${remainMinutes} 分鐘`;
+      if (remainMinutes === 0) return `剩餘 ${hours} 小時`;
+
+      return `剩餘 ${hours} 小時 ${remainMinutes} 分`;
+    }
+
+    function renderAdminWitherList() {
+      const section = $("adminWitherSection");
+      const listElement = $("adminWitherList");
+      const countElement = $("adminWitherCount");
+
+      if (!section || !listElement || !countElement) return;
+
+      section.style.display = isAdmin ? "block" : "none";
+
+      if (!isAdmin) return;
+
+      const now = Date.now();
+
+      const upcoming = (Array.isArray(withers) ? withers : [])
+        .filter(item => {
+          const witherAt = new Date(item && item.witherAt);
+          return (
+            !Number.isNaN(witherAt.getTime()) &&
+            witherAt.getTime() > now
+          );
+        })
+        .sort(
+          (a, b) =>
+            new Date(a.witherAt).getTime() -
+            new Date(b.witherAt).getTime()
+        );
+
+      countElement.textContent = String(upcoming.length);
+
+      if (!upcoming.length) {
+        listElement.innerHTML =
+          '<div class="admin-wither-empty">目前沒有即將凋謝的花田。</div>';
+        return;
+      }
+
+      listElement.innerHTML = upcoming.map(item => {
+        const communityText =
+          String(item.isCommunityDay || "").toUpperCase() === "TRUE" ||
+          item.isCommunityDay === true
+            ? " · 社群日"
+            : "";
+
+        return `
+          <div class="admin-wither-item">
+            <div class="admin-wither-place">
+              ${escapeHtml(item.place || "未命名花田")}${communityText}
+            </div>
+            <div class="admin-wither-time">
+              ⏰ ${escapeHtml(formatWitherTime(item.witherAt))}
+            </div>
+            <div class="admin-wither-left">
+              ${escapeHtml(formatWitherRemaining(item.witherAt))}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+
     function renderReports() {
+      renderAdminWitherList();
+
       const keyword = $("keyword").value.trim().toLowerCase();
       const color = $("colorFilter").value;
       const flower = $("flowerFilter").value.trim().toLowerCase();
