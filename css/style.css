@@ -76,6 +76,18 @@
       flex: 1;
     }
 
+    .clear-filters-btn {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .last-updated-status {
+      margin: -8px 4px 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
     input,
     select,
     textarea,
@@ -247,6 +259,60 @@
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 14px;
+    }
+
+
+    .admin-system-section {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .admin-system-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .admin-system-header h3 {
+      margin: 0;
+      font-size: 15px;
+      color: var(--primary-dark);
+    }
+
+    .admin-system-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .admin-system-item {
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .admin-system-item span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .admin-system-item strong {
+      display: block;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
 
@@ -606,12 +672,52 @@
       backdrop-filter: blur(10px);
     }
 
+    .notice-float-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
     .notice-float-title {
-      margin: 0 0 8px;
+      margin: 0;
       font-size: 15px;
       font-weight: 900;
       color: var(--primary-dark);
       letter-spacing: 0.03em;
+    }
+
+    .notice-toggle-btn {
+      width: 28px !important;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 !important;
+      border-radius: 999px;
+      background: transparent !important;
+      color: var(--primary-dark) !important;
+      border: 1px solid var(--border) !important;
+      line-height: 1;
+      box-shadow: none !important;
+    }
+
+    .notice-toggle-btn:hover {
+      background: #fff8f2 !important;
+      transform: none !important;
+    }
+
+    .notice-float-body {
+      margin-top: 8px;
+    }
+
+    .notice-float.collapsed {
+      width: auto;
+      min-width: 148px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .notice-float.collapsed .notice-float-body {
+      display: none;
     }
 
     .notice-float-list {
@@ -705,6 +811,19 @@
       .topbar { align-items: stretch; }
       .search-area,
       .topbar > button { width: 100%; }
+
+      .last-updated-status {
+        margin-top: -4px;
+        text-align: center;
+      }
+
+      .admin-system-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .admin-system-item:last-child {
+        grid-column: 1 / -1;
+      }
 
       /* 手機版隱藏「全部花種（可輸入搜尋）」欄位 */
       #flowerFilter {
@@ -870,6 +989,14 @@
 
       .notice-float-title {
         font-size: 14px;
+      }
+
+      .notice-toggle-btn {
+        width: 28px !important;
+      }
+
+      .notice-float.collapsed {
+        min-width: 138px;
       }
 
       .notice-float-list {
