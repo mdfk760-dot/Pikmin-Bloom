@@ -116,6 +116,21 @@ async function loadReportsOnce() {
     return false;
   }
 
+  // Admin 請求若沒有拿到 admin role，
+  // 視為 Token 已失效，避免公開資料被誤當成 Admin 資料。
+  if (
+    requestRole === "admin" &&
+    data.role !== "admin"
+  ) {
+    clearAccessSession();
+    setAccessMode("public");
+    restoreReportsSnapshot("public");
+    showToast(
+      "管理員登入已逾時，已切回公開模式"
+    );
+    return false;
+  }
+
   reports =
     Array.isArray(data.reports)
       ? data.reports
